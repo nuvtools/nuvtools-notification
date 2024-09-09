@@ -1,10 +1,8 @@
-﻿using System.IO;
-
-namespace NuvTools.Notification.Mail;
+﻿namespace NuvTools.Notification.Mail;
 
 public class MailPart
 {
-    public string MediaType { get; set; }
-    public string MediaExtension { get; set; }
-    public Stream Content { get; set; }
+    public required string MediaType { get; set; }
+    public required string MediaExtension { get; set; }
+    public required Stream Content { get; set; }
 }

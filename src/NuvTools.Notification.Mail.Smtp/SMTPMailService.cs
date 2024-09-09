@@ -3,27 +3,20 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using NuvTools.Notification.Mail.Configuration;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace NuvTools.Notification.Mail;
+namespace NuvTools.Notification.Mail.Smtp;
 
-public class SMTPMailService : IMailService
+public class SMTPMailService(IOptions<MailConfigurationSection> appMailConfiguration) : IMailService
 {
-    private readonly MailConfigurationSection _appMailConfiguration;
-
-    public SMTPMailService(IOptions<MailConfigurationSection> appMailConfiguration)
-    {
-        _appMailConfiguration = appMailConfiguration.Value;
-    }
+    private readonly MailConfigurationSection _appMailConfiguration = appMailConfiguration.Value;
 
     public async Task SendAsync(MailMessage request)
     {
         var message = new MimeMessage();
         var bodyBuilder = new BodyBuilder();
 
-        message.From.Add(new MailboxAddress(request.From?.DisplayName ?? _appMailConfiguration.DisplayName, 
-                                            request.From?.Address ?? _appMailConfiguration.From));
+        message.From.Add(new MailboxAddress(request.From.DisplayName ?? _appMailConfiguration.DisplayName,
+                                            request.From.Address ?? _appMailConfiguration.From));
         message.To.AddRange(request.To.Select(e => new MailboxAddress(e.DisplayName, e.Address)));
 
         message.Subject = request.Subject;

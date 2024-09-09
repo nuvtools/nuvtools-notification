@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace NuvTools.Notification.Mail;
+﻿namespace NuvTools.Notification.Mail;
 
 public interface IMailService
 {

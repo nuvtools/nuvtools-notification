@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6;net7;net8</TargetFrameworks>
+		<TargetFrameworks>net8</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Nuv Tools</Authors>
 		<Copyright>Copyright © 2024 Nuv Tools</Copyright>
-		<PackageProjectUrl>https://nuv.tools</PackageProjectUrl>
+		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>NuvTools.Notification.Mail.Smtp.snk</AssemblyOriginatorKeyFile>
 		<Description>Infrastructure library for send mails using SMTP protocol.</Description>
-		<Version>8.0.3</Version>
+		<Version>8.1.0</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -22,6 +22,7 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>Nuv Tools Mail SMTP MailKit MimeKit</PackageTags>
 		<ImplicitUsings>true</ImplicitUsings>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -42,9 +43,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MailKit" Version="4.4.0" />
+	  <PackageReference Include="MailKit" Version="4.7.1.1" />
 	  <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
-	  <PackageReference Include="MimeKit" Version="4.4.0" />
+	  <PackageReference Include="MimeKit" Version="4.7.1" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -2,6 +2,6 @@
 
 public class MailAddress
 {
-    public string Address { get; set; }
-    public string DisplayName { get; set; }
+    public required string Address { get; set; }
+    public string? DisplayName { get; set; }
 }

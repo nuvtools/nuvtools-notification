@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace NuvTools.Notification.Messaging.Azure.ServiceBus;
 
-public abstract class AzureServiceBusSender<T> : IMessageSender<T> where T : Message<T>
+public abstract class AzureServiceBusSender<TBody> : IMessageSender<TBody> where TBody : class
 {
     private static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
@@ -29,7 +29,7 @@ public abstract class AzureServiceBusSender<T> : IMessageSender<T> where T : Mes
     {
     }
 
-    public async Task SendAsync(T message, CancellationToken cancellationToken = default)
+    public async Task SendAsync(Message<TBody> message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
 

@@ -32,9 +32,9 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
         _client = new ServiceBusClient(queueSettings.ConnectionString);
         _processor = _client.CreateProcessor(queueSettings.Name, new ServiceBusProcessorOptions
         {
-            MaxAutoLockRenewalDuration = TimeSpan.FromMinutes(30),
-            MaxConcurrentCalls = 10,
-            AutoCompleteMessages = false
+            MaxAutoLockRenewalDuration = queueSettings.MaxAutoLockRenewalDuration,
+            MaxConcurrentCalls = queueSettings.MaxConcurrentCalls,
+            AutoCompleteMessages = queueSettings.AutoCompleteMessages
         });
     }
 

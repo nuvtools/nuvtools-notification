@@ -7,5 +7,5 @@ public class Message<T>(T body) where T : class
     public string? Subject { get; set; }
     public TimeSpan? TimeToLive { get; set; }
     public Dictionary<string, object> Properties { get; set; } = [];
-    public required T Body { get; set; } = body;
+    public T Body { get; set; } = body;
 }

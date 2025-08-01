@@ -1,6 +1,6 @@
 ﻿namespace NuvTools.Notification.Messaging.Interfaces;
 
-public interface IMessageConsumer<T> where T : class
+public interface IMessageConsumer<TBody> where TBody : class
 {
-    Task ConsumeAsync(Message<T> message, CancellationToken cancellationToken);
+    Task ConsumeAsync(Message<TBody> message, CancellationToken cancellationToken);
 }

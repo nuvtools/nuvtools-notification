@@ -1,5 +1,4 @@
 using Azure.Messaging.ServiceBus;
-using NuvTools.Common.ResultWrapper;
 using NuvTools.Notification.Messaging.Configuration;
 using NuvTools.Notification.Messaging.Interfaces;
 using System.Text.Json;
@@ -30,7 +29,7 @@ public abstract class AzureServiceBusSender<T> : IMessageSender<T> where T : Mes
     {
     }
 
-    public async Task<IResult> SendAsync(T message, CancellationToken cancellationToken = default)
+    public async Task SendAsync(T message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
 
@@ -50,7 +49,5 @@ public abstract class AzureServiceBusSender<T> : IMessageSender<T> where T : Mes
             sbMessage.ApplicationProperties.TryAdd(kvp.Key, kvp.Value);
 
         await _sender.SendMessageAsync(sbMessage, cancellationToken);
-
-        return Result.Success("Message sent successfully");
     }
 }

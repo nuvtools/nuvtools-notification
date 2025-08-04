@@ -11,7 +11,7 @@
 		<Description>
 			Abstraction library for building messaging solutions in .NET applications. Provides interfaces and base components to support integration with various messaging services and protocols.
 		</Description>
-		<Version>9.3.0</Version>
+		<Version>9.3.1</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>

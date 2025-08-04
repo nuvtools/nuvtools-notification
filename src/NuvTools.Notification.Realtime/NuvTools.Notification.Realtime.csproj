@@ -9,7 +9,7 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>NuvTools.Notification.Realtime.snk</AssemblyOriginatorKeyFile>
 		<Description>
-			Abstraction library for building messaging solutions in .NET applications. Provides interfaces and base components to support integration with various messaging services and protocols.
+			Abstraction library for building real-time notification and messaging solutions. Provides interfaces and base components to support integration with various real-time protocols and services.
 		</Description>
 		<Version>9.3.0</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -23,7 +23,7 @@
 		<AnalysisLevel>latest</AnalysisLevel>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>
-			NuvTools Messaging Abstraction .NET Communication Integration ServiceBus SMTP Queue PubSub
+			NuvTools Realtime Messaging Notification Abstraction .NET SignalR WebSocket Push Communication Integration
 		</PackageTags>
 		<ImplicitUsings>true</ImplicitUsings>
 		<Nullable>enable</Nullable>

@@ -9,7 +9,7 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>NuvTools.Notification.Realtime.Azure.SignalR.snk</AssemblyOriginatorKeyFile>
 		<Description>
-			Abstraction library for building messaging solutions in .NET applications. Provides interfaces and base components to support integration with various messaging services and protocols.
+			Infrastructure library for integrating Azure SignalR real-time messaging. Implements abstractions for scalable, cloud-based notifications and live communication using SignalR.
 		</Description>
 		<Version>9.3.0</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -23,7 +23,7 @@
 		<AnalysisLevel>latest</AnalysisLevel>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>
-			NuvTools Messaging Abstraction .NET Communication Integration ServiceBus SMTP Queue PubSub
+			NuvTools Realtime Azure SignalR Messaging Notification .NET WebSocket Push Communication Cloud Integration
 		</PackageTags>
 		<ImplicitUsings>true</ImplicitUsings>
 		<Nullable>enable</Nullable>

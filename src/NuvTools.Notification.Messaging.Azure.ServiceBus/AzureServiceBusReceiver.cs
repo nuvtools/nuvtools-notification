@@ -53,19 +53,22 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             var body = args.Message.Body.ToString();
             _logger.LogInformation("Received: {Body}", body);
 
-            var message = JsonSerializer.Deserialize<Message<TBody>>(body, DefaultJsonSerializerOptions);
+            var deserializedBody = JsonSerializer.Deserialize<TBody>(body, DefaultJsonSerializerOptions);
 
-            if (message is null)
+            if (deserializedBody is null)
             {
-                _logger.LogWarning("Unable to deserialize message.");
+                _logger.LogWarning("Unable to deserialize body message.");
                 await args.AbandonMessageAsync(args.Message);
                 return;
             }
 
-            message.MessageId = args.Message.MessageId;
-            message.CorrelationId ??= args.Message.CorrelationId;
-            message.Subject ??= args.Message.Subject;
-            message.TimeToLive ??= args.Message.TimeToLive;
+            var message = new Message<TBody>(deserializedBody)
+            {
+                MessageId = args.Message.MessageId,
+                CorrelationId = args.Message.CorrelationId,
+                Subject = args.Message.Subject,
+                TimeToLive = args.Message.TimeToLive
+            };
 
             foreach (var kvp in args.Message.ApplicationProperties)
                 message.Properties.TryAdd(kvp.Key, kvp.Value);

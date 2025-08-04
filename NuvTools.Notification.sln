@@ -15,6 +15,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuvTools.Notification.Messa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuvTools.Notification.Messaging.Azure.ServiceBus", "src\NuvTools.Notification.Messaging.Azure.ServiceBus\NuvTools.Notification.Messaging.Azure.ServiceBus.csproj", "{8B15BB45-1006-D891-2FAE-98B952D1B754}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuvTools.Notification.Realtime", "src\NuvTools.Notification.Realtime\NuvTools.Notification.Realtime.csproj", "{2A97CE79-191E-FFEC-84D7-96791B0498EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuvTools.Notification.Realtime.Azure.SignalR", "src\NuvTools.Notification.Realtime.Azure.SignalR\NuvTools.Notification.Realtime.Azure.SignalR.csproj", "{D922A194-6184-24E8-FC69-DBA459F121E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuvTools.Notification.Realtime.Azure.SignalR.Client", "src\NuvTools.Notification.Realtime.Azure.SignalR.Client\NuvTools.Notification.Realtime.Azure.SignalR.Client.csproj", "{325A33D4-EF89-71BF-2165-9AD70C609DBE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +43,18 @@ Global
 		{8B15BB45-1006-D891-2FAE-98B952D1B754}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B15BB45-1006-D891-2FAE-98B952D1B754}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B15BB45-1006-D891-2FAE-98B952D1B754}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A97CE79-191E-FFEC-84D7-96791B0498EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A97CE79-191E-FFEC-84D7-96791B0498EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A97CE79-191E-FFEC-84D7-96791B0498EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A97CE79-191E-FFEC-84D7-96791B0498EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D922A194-6184-24E8-FC69-DBA459F121E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D922A194-6184-24E8-FC69-DBA459F121E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D922A194-6184-24E8-FC69-DBA459F121E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D922A194-6184-24E8-FC69-DBA459F121E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{325A33D4-EF89-71BF-2165-9AD70C609DBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{325A33D4-EF89-71BF-2165-9AD70C609DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{325A33D4-EF89-71BF-2165-9AD70C609DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{325A33D4-EF89-71BF-2165-9AD70C609DBE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +64,9 @@ Global
 		{3A604302-2915-4BBC-B9F3-E0176098394E} = {65AFE379-05AA-410A-8E51-FA3C9BA73F2F}
 		{D5F305AB-5E7A-D458-6FC7-E727682755CA} = {65AFE379-05AA-410A-8E51-FA3C9BA73F2F}
 		{8B15BB45-1006-D891-2FAE-98B952D1B754} = {65AFE379-05AA-410A-8E51-FA3C9BA73F2F}
+		{2A97CE79-191E-FFEC-84D7-96791B0498EB} = {65AFE379-05AA-410A-8E51-FA3C9BA73F2F}
+		{D922A194-6184-24E8-FC69-DBA459F121E5} = {65AFE379-05AA-410A-8E51-FA3C9BA73F2F}
+		{325A33D4-EF89-71BF-2165-9AD70C609DBE} = {65AFE379-05AA-410A-8E51-FA3C9BA73F2F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EA66557C-9587-4A8E-8E59-05853CC764BC}

@@ -18,10 +18,6 @@ namespace NuvTools.Notification.Messaging.Azure.ServiceBus;
 ///     <typeparam name="TConsumer">
 ///         The consumer type that implements <see cref="IMessageConsumer{TBody}"/> and handles the message.
 ///     </typeparam>
-///     <remarks>
-///         To use, inherit from this class and implement <see cref="GetMessagingSettings"/> to provide configuration.
-///         Register your <typeparamref name="TConsumer"/> in the DI container.
-///     </remarks>
 /// </summary>
 public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundService
     where TBody : class
@@ -35,36 +31,31 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
     private static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     /// <summary>
-    ///     Provides the messaging configuration settings for the receiver.
-    /// </summary>
-    /// <returns>The <see cref="MessagingSection"/> containing Service Bus settings.</returns>
-    protected abstract MessagingSection GetMessagingSettings();
-
-    /// <summary>
     ///     Initializes a new instance of the <see cref="AzureServiceBusReceiver{TBody, TConsumer}"/> class.
     /// </summary>
     /// <param name="logger">The logger instance.</param>
     /// <param name="serviceProvider">The service provider for dependency injection.</param>
+    /// <param name="messagingSection">The messaging configuration section containing Service Bus settings.</param>
     public AzureServiceBusReceiver(
         ILogger logger,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        MessagingSection messagingSection)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
 
-        var messagingSettings = GetMessagingSettings();
-        _client = new ServiceBusClient(messagingSettings.ConnectionString);
+        _client = new ServiceBusClient(messagingSection.ConnectionString);
 
         var options = new ServiceBusProcessorOptions
         {
-            MaxAutoLockRenewalDuration = messagingSettings.MaxAutoLockRenewalDuration,
-            MaxConcurrentCalls = messagingSettings.MaxConcurrentCalls,
-            AutoCompleteMessages = messagingSettings.AutoCompleteMessages
+            MaxAutoLockRenewalDuration = messagingSection.MaxAutoLockRenewalDuration,
+            MaxConcurrentCalls = messagingSection.MaxConcurrentCalls,
+            AutoCompleteMessages = messagingSection.AutoCompleteMessages
         };
 
-        _processor = string.IsNullOrEmpty(messagingSettings.SubscriptionName)
-            ? _client.CreateProcessor(messagingSettings.Name, options) // Queue
-            : _client.CreateProcessor(messagingSettings.Name, messagingSettings.SubscriptionName!, options); // Topic/Subscription
+        _processor = string.IsNullOrEmpty(messagingSection.SubscriptionName)
+            ? _client.CreateProcessor(messagingSection.Name, options) // Queue
+            : _client.CreateProcessor(messagingSection.Name, messagingSection.SubscriptionName!, options); // Topic/Subscription
     }
 
     /// <summary>

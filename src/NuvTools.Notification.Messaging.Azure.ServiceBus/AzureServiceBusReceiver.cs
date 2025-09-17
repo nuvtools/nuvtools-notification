@@ -81,12 +81,22 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             var body = args.Message.Body.ToString();
             _logger.LogInformation("Received: {Body}", body);
 
-            var deserializedBody = JsonSerializer.Deserialize<TBody>(body, DefaultJsonSerializerOptions);
+            TBody? deserializedBody = null;
+            try
+            {
+                deserializedBody = JsonSerializer.Deserialize<TBody>(body, DefaultJsonSerializerOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Deserialization failed for message {MessageId}", args.Message.MessageId);
+                await args.DeadLetterMessageAsync(args.Message, "DeserializationFailed", ex.Message);
+                return;
+            }
 
             if (deserializedBody is null)
             {
-                _logger.LogWarning("Unable to deserialize body message.");
-                await args.AbandonMessageAsync(args.Message);
+                _logger.LogWarning("Message {MessageId} deserialized to null", args.Message.MessageId);
+                await args.DeadLetterMessageAsync(args.Message, "DeserializationReturnedNull");
                 return;
             }
 
@@ -103,26 +113,72 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
 
             using var scope = _serviceProvider.CreateScope();
             var consumer = scope.ServiceProvider.GetRequiredService<TConsumer>();
-            await consumer.ConsumeAsync(message, args.CancellationToken);
 
-            await args.CompleteMessageAsync(args.Message);
+            try
+            {
+                await consumer.ConsumeAsync(message, args.CancellationToken);
+                await args.CompleteMessageAsync(args.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error consuming message {MessageId}", args.Message.MessageId);
+                await args.AbandonMessageAsync(args.Message);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing message");
+            _logger.LogCritical(ex, "Unexpected fatal error in HandleMessage loop");
             await args.AbandonMessageAsync(args.Message);
         }
     }
+
 
     /// <summary>
     ///     Handles errors that occur during message processing.
     /// </summary>
     /// <param name="args">The error event arguments.</param>
-    private Task HandleError(ProcessErrorEventArgs args)
+    private async Task HandleError(ProcessErrorEventArgs args)
     {
-        _logger.LogError(args.Exception, "Service Bus error");
-        return Task.CompletedTask;
+        _logger.LogError(args.Exception,
+            "Service Bus error in {EntityPath} - ErrorSource: {ErrorSource}, Namespace: {FullyQualifiedNamespace}",
+            args.EntityPath,
+            args.ErrorSource,
+            args.FullyQualifiedNamespace);
+
+        if (!_processor.IsProcessing)
+        {
+            _logger.LogWarning("Processor stopped for {EntityPath}, attempting restart...", args.EntityPath);
+            await RestartProcessorWithRetry(args.CancellationToken);
+            _logger.LogInformation("Processor successfully restarted for {EntityPath}", args.EntityPath);
+        }
+
+        await Task.CompletedTask;
     }
+
+    private async Task RestartProcessorWithRetry(CancellationToken cancellationToken)
+    {
+        var delay = TimeSpan.FromSeconds(5);
+
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            try
+            {
+                _logger.LogWarning("Restart attempt {Attempt}...", attempt);
+                await _processor.StartProcessingAsync(cancellationToken);
+                _logger.LogInformation("Processor restarted successfully.");
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Restart attempt {Attempt} failed", attempt);
+                await Task.Delay(delay, cancellationToken);
+                delay = delay * 2; // exponential backoff
+            }
+        }
+
+        _logger.LogCritical("Processor could not be restarted after 3 attempts.");
+    }
+
 
     /// <summary>
     ///     Stops the message processor and disposes resources.

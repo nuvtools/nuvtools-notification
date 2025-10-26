@@ -114,10 +114,11 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             using var scope = _serviceProvider.CreateScope();
             var consumer = scope.ServiceProvider.GetRequiredService<TConsumer>();
 
+            var context = new AzureMessageContext(args);
+
             try
             {
-                await consumer.ConsumeAsync(message, args.CancellationToken);
-                await args.CompleteMessageAsync(args.Message);
+                await consumer.ConsumeAsync(message, context, args.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -131,7 +132,6 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             await args.AbandonMessageAsync(args.Message);
         }
     }
-
 
     /// <summary>
     ///     Handles errors that occur during message processing.

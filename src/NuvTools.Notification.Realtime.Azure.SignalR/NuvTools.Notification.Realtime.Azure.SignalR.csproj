@@ -11,7 +11,7 @@
 		<Description>
 			Infrastructure library for integrating Azure SignalR real-time messaging. Implements abstractions for scalable, cloud-based notifications and live communication using SignalR.
 		</Description>
-		<Version>9.3.0</Version>
+		<Version>9.5.0</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -47,8 +47,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.30.3" />
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.7" />
+		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.32.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.10" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -11,7 +11,7 @@
 		<Description>
 			Client library for integrating Azure SignalR real-time messaging. Provides components for connecting and receiving live notifications using SignalR protocols.
 		</Description>
-		<Version>9.3.0</Version>
+		<Version>9.5.0</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -47,8 +47,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.7" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.7" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.10" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.10" />
 	</ItemGroup>
 
 </Project>

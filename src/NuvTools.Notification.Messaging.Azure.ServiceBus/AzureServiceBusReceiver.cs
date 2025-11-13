@@ -119,11 +119,16 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             try
             {
                 await consumer.ConsumeAsync(message, context, args.CancellationToken);
+
+                if (!context.IsMessageCompleted)
+                    await args.CompleteMessageAsync(args.Message);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error consuming message {MessageId}", args.Message.MessageId);
-                await args.AbandonMessageAsync(args.Message);
+
+                if (!context.IsMessageCompleted)
+                    await args.AbandonMessageAsync(args.Message);
             }
         }
         catch (Exception ex)

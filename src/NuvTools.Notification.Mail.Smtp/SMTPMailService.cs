@@ -6,10 +6,30 @@ using NuvTools.Notification.Mail.Configuration;
 
 namespace NuvTools.Notification.Mail.Smtp;
 
+/// <summary>
+/// SMTP implementation of <see cref="IMailService"/> using MailKit for sending email messages.
+/// </summary>
+/// <param name="appMailConfiguration">The mail configuration options containing SMTP server settings.</param>
+/// <remarks>
+/// This service uses the MailKit library to send emails via SMTP protocol.
+/// It supports HTML body content, multiple recipients, and file attachments.
+/// The SMTP connection is configured using settings from <see cref="MailConfigurationSection"/>.
+/// </remarks>
 public class SMTPMailService(IOptions<MailConfigurationSection> appMailConfiguration) : IMailService
 {
     private readonly MailConfigurationSection _appMailConfiguration = appMailConfiguration.Value;
 
+    /// <summary>
+    /// Sends an email message asynchronously using the configured SMTP server.
+    /// </summary>
+    /// <param name="request">The mail message to send, including sender, recipients, subject, body, and optional attachments.</param>
+    /// <returns>A task representing the asynchronous send operation.</returns>
+    /// <remarks>
+    /// This method constructs a MIME message from the provided <paramref name="request"/>, connects to the SMTP server,
+    /// authenticates using the configured credentials, sends the message, and disconnects.
+    /// If the message includes attachments via <see cref="MailMessage.Parts"/>, they are added as MIME attachments.
+    /// The sender address and display name can be overridden per message or fall back to configuration defaults.
+    /// </remarks>
     public async Task SendAsync(MailMessage request)
     {
         var message = new MimeMessage();

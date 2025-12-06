@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src\NuvTools.Notification.Mail\NuvTools.Notification.Mail.csproj" Type="Classic C#" />
+    <Project Path="src\NuvTools.Notification.Mail.Smtp\NuvTools.Notification.Mail.Smtp.csproj" Type="Classic C#" />
+    <Project Path="src\NuvTools.Notification.Messaging\NuvTools.Notification.Messaging.csproj" Type="Classic C#" />
+    <Project Path="src\NuvTools.Notification.Messaging.Azure.ServiceBus\NuvTools.Notification.Messaging.Azure.ServiceBus.csproj" Type="Classic C#" />
+    <Project Path="src\NuvTools.Notification.Realtime\NuvTools.Notification.Realtime.csproj" Type="Classic C#" />
+    <Project Path="src\NuvTools.Notification.Realtime.Azure.SignalR\NuvTools.Notification.Realtime.Azure.SignalR.csproj" Type="Classic C#" />
+    <Project Path="src\NuvTools.Notification.Realtime.Azure.SignalR.Client\NuvTools.Notification.Realtime.Azure.SignalR.Client.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Properties Name="Configuration">
+    <Property Name="Debug|Any CPU" />
+    <Property Name="Release|Any CPU" />
+  </Properties>
+</Solution>

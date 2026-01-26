@@ -20,15 +20,15 @@ NuvTools Notification Libraries provide a clean abstraction layer over various n
 
 ## Libraries
 
-| Library | Type | Purpose |
-|---------|------|---------|
-| **NuvTools.Notification.Messaging** | Abstraction | Core messaging interfaces and models for queues and topics |
-| **NuvTools.Notification.Messaging.Azure.ServiceBus** | Implementation | Azure Service Bus provider for reliable cloud messaging |
-| **NuvTools.Notification.Mail** | Abstraction | Email notification abstractions with support for HTML and attachments |
-| **NuvTools.Notification.Mail.Smtp** | Implementation | SMTP provider using MailKit for email delivery |
-| **NuvTools.Notification.Realtime** | Abstraction | Real-time messaging abstractions for live notifications |
-| **NuvTools.Notification.Realtime.Azure.SignalR** | Implementation | Azure SignalR server-side implementation |
-| **NuvTools.Notification.Realtime.Azure.SignalR.Client** | Implementation | Azure SignalR client for receiving real-time messages |
+| Library | NuGet | Type | Purpose |
+|---------|-------|------|---------|
+| **NuvTools.Notification.Messaging** | [![NuGet](https://img.shields.io/nuget/v/NuvTools.Notification.Messaging.svg)](https://www.nuget.org/packages/NuvTools.Notification.Messaging) | Abstraction | Core messaging interfaces and models for queues and topics |
+| **NuvTools.Notification.Messaging.Azure.ServiceBus** | [![NuGet](https://img.shields.io/nuget/v/NuvTools.Notification.Messaging.Azure.ServiceBus.svg)](https://www.nuget.org/packages/NuvTools.Notification.Messaging.Azure.ServiceBus) | Implementation | Azure Service Bus provider for reliable cloud messaging |
+| **NuvTools.Notification.Mail** | [![NuGet](https://img.shields.io/nuget/v/NuvTools.Notification.Mail.svg)](https://www.nuget.org/packages/NuvTools.Notification.Mail) | Abstraction | Email notification abstractions with support for HTML and attachments |
+| **NuvTools.Notification.Mail.Smtp** | [![NuGet](https://img.shields.io/nuget/v/NuvTools.Notification.Mail.Smtp.svg)](https://www.nuget.org/packages/NuvTools.Notification.Mail.Smtp) | Implementation | SMTP provider using MailKit for email delivery |
+| **NuvTools.Notification.Realtime** | [![NuGet](https://img.shields.io/nuget/v/NuvTools.Notification.Realtime.svg)](https://www.nuget.org/packages/NuvTools.Notification.Realtime) | Abstraction | Real-time messaging abstractions for live notifications |
+| **NuvTools.Notification.Realtime.Azure.SignalR** | [![NuGet](https://img.shields.io/nuget/v/NuvTools.Notification.Realtime.Azure.SignalR.svg)](https://www.nuget.org/packages/NuvTools.Notification.Realtime.Azure.SignalR) | Implementation | Azure SignalR server-side implementation |
+| **NuvTools.Notification.Realtime.Azure.SignalR.Client** | [![NuGet](https://img.shields.io/nuget/v/NuvTools.Notification.Realtime.Azure.SignalR.Client.svg)](https://www.nuget.org/packages/NuvTools.Notification.Realtime.Azure.SignalR.Client) | Implementation | Azure SignalR client for receiving real-time messages |
 
 ### Library Descriptions
 
@@ -402,7 +402,7 @@ Contributions are welcome! Please ensure:
 
 ## License
 
-Copyright © 2025 Nuv Tools. All rights reserved.
+Copyright © 2026 Nuv Tools. All rights reserved.
 
 ## Resources
 

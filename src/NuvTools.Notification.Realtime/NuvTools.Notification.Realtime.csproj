@@ -4,12 +4,10 @@
 		<TargetFrameworks>net8;net9;net10.0</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Nuv Tools</Authors>
-		<Copyright>Copyright © 2025 Nuv Tools</Copyright>
+		<Copyright>Copyright © 2026 Nuv Tools</Copyright>
 		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
-		<Description>
-			Abstraction library for building real-time notification and messaging solutions. Provides interfaces and base components to support integration with various real-time protocols and services.
-		</Description>
-		<Version>10.0.0</Version>
+		<Description>Abstraction library for real-time notifications in .NET applications. Defines IMessageSender interface for broadcasting messages to connected clients. Protocol-agnostic design supports SignalR, WebSocket, and other real-time communication providers.</Description>
+		<Version>10.0.2</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -20,9 +18,7 @@
 		<RepositoryType>git</RepositoryType>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>
-			NuvTools Realtime Messaging Notification Abstraction .NET SignalR WebSocket Push Communication Integration
-		</PackageTags>
+		<PackageTags>NuvTools;Realtime;Real-Time;Notification;Abstraction;Push;Broadcast;WebSocket;Live;Event;dotnet</PackageTags>
 		<ImplicitUsings>true</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -45,7 +41,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[10.0.2,10.1.0)" />
 	</ItemGroup>
 
 </Project>

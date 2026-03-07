@@ -7,7 +7,7 @@
 		<Copyright>Copyright © 2026 Nuv Tools</Copyright>
 		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
 		<Description>Abstraction library for real-time notifications in .NET applications. Defines IMessageSender interface for broadcasting messages to connected clients. Protocol-agnostic design supports SignalR, WebSocket, and other real-time communication providers.</Description>
-		<Version>10.0.2</Version>
+		<Version>10.0.3</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -41,7 +41,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[10.0.2,10.1.0)" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
 	</ItemGroup>
 
 </Project>

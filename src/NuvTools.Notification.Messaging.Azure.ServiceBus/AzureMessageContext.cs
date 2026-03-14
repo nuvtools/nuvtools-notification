@@ -29,8 +29,14 @@ internal class AzureMessageContext(ProcessMessageEventArgs args) : IMessageConte
     public async Task CompleteAsync(CancellationToken cancellationToken = default)
     {
         if (IsMessageCompleted) return;
-        await args.CompleteMessageAsync(args.Message, cancellationToken);
-        IsMessageCompleted = true;
+        try
+        {
+            await args.CompleteMessageAsync(args.Message, cancellationToken);
+        }
+        finally
+        {
+            IsMessageCompleted = true;
+        }
     }
 
     /// <summary>
@@ -42,8 +48,14 @@ internal class AzureMessageContext(ProcessMessageEventArgs args) : IMessageConte
     public async Task AbandonAsync(CancellationToken cancellationToken = default)
     {
         if (IsMessageCompleted) return;
-        await args.AbandonMessageAsync(args.Message, cancellationToken: cancellationToken);
-        IsMessageCompleted = true;
+        try
+        {
+            await args.AbandonMessageAsync(args.Message, cancellationToken: cancellationToken);
+        }
+        finally
+        {
+            IsMessageCompleted = true;
+        }
     }
 
     /// <summary>
@@ -57,7 +69,13 @@ internal class AzureMessageContext(ProcessMessageEventArgs args) : IMessageConte
     public async Task DeadLetterAsync(string reason, string? errorDescription = null, CancellationToken cancellationToken = default)
     {
         if (IsMessageCompleted) return;
-        await args.DeadLetterMessageAsync(args.Message, reason, errorDescription, cancellationToken);
-        IsMessageCompleted = true;
+        try
+        {
+            await args.DeadLetterMessageAsync(args.Message, reason, errorDescription, cancellationToken);
+        }
+        finally
+        {
+            IsMessageCompleted = true;
+        }
     }
 }

@@ -66,8 +66,14 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
     {
         _processor.ProcessMessageAsync += HandleMessage;
         _processor.ProcessErrorAsync += HandleError;
+
         await _processor.StartProcessingAsync(stoppingToken);
-        await Task.Delay(Timeout.Infinite, stoppingToken);
+
+        try
+        {
+            await Task.Delay(Timeout.Infinite, stoppingToken);
+        }
+        catch (OperationCanceledException) { }
     }
 
     /// <summary>
@@ -79,7 +85,7 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
         try
         {
             var body = args.Message.Body.ToString();
-            _logger.LogInformation("Received: {Body}", body);
+            _logger.LogDebug("Received: {Body}", body);
 
             TBody? deserializedBody = null;
             try
@@ -123,18 +129,39 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
                 if (!context.IsMessageCompleted)
                     await args.CompleteMessageAsync(args.Message);
             }
+            catch (ServiceBusException sbEx) when (sbEx.Reason == ServiceBusFailureReason.MessageLockLost)
+            {
+                _logger.LogWarning("Message lock lost for {MessageId}. The message will be retried automatically.", args.Message.MessageId);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error consuming message {MessageId}", args.Message.MessageId);
 
                 if (!context.IsMessageCompleted)
-                    await args.AbandonMessageAsync(args.Message);
+                {
+                    try
+                    {
+                        await args.AbandonMessageAsync(args.Message);
+                    }
+                    catch (ServiceBusException abandonEx) when (abandonEx.Reason == ServiceBusFailureReason.MessageLockLost)
+                    {
+                        _logger.LogWarning("Could not abandon message {MessageId} — lock already lost. Message will be retried automatically.", args.Message.MessageId);
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
             _logger.LogCritical(ex, "Unexpected fatal error in HandleMessage loop");
-            await args.AbandonMessageAsync(args.Message);
+
+            try
+            {
+                await args.AbandonMessageAsync(args.Message);
+            }
+            catch (ServiceBusException abandonEx) when (abandonEx.Reason == ServiceBusFailureReason.MessageLockLost)
+            {
+                _logger.LogWarning("Could not abandon message {MessageId} after fatal error — lock already lost.", args.Message.MessageId);
+            }
         }
     }
 
@@ -152,12 +179,16 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
 
         if (!_processor.IsProcessing)
         {
-            _logger.LogWarning("Processor stopped for {EntityPath}, attempting restart...", args.EntityPath);
-            await RestartProcessorWithRetry(args.CancellationToken);
-            _logger.LogInformation("Processor successfully restarted for {EntityPath}", args.EntityPath);
+            try
+            {
+                _logger.LogWarning("Processor stopped for {EntityPath}, attempting restart...", args.EntityPath);
+                await RestartProcessorWithRetry(args.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Failed to restart processor for {EntityPath}", args.EntityPath);
+            }
         }
-
-        await Task.CompletedTask;
     }
 
     private async Task RestartProcessorWithRetry(CancellationToken cancellationToken)
@@ -191,7 +222,9 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
     /// <param name="cancellationToken">A token to signal cancellation.</param>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _processor.StopProcessingAsync(cancellationToken);
+        if (_processor.IsProcessing)
+            await _processor.StopProcessingAsync(cancellationToken);
+
         await _processor.DisposeAsync();
         await _client.DisposeAsync();
         await base.StopAsync(cancellationToken);

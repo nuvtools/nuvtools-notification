@@ -44,6 +44,12 @@ public class Message<T>(T body) where T : class
     public string? Subject { get; set; }
 
     /// <summary>
+    /// Optional session identifier for session-enabled queues/topics.
+    /// Messages with the same SessionId are processed sequentially.
+    /// </summary>
+    public string? SessionId { get; set; }
+
+    /// <summary>
     /// Optional time-to-live for the message. When set, senders or transports may discard the message after this interval.
     /// </summary>
     public TimeSpan? TimeToLive { get; set; }

@@ -75,6 +75,9 @@ public abstract class AzureServiceBusSender<TBody> : IMessageSender<TBody> where
             CorrelationId = message.CorrelationId
         };
 
+        if (!string.IsNullOrEmpty(message.SessionId))
+            sbMessage.SessionId = message.SessionId;
+
         if (message.TimeToLive is not null)
             sbMessage.TimeToLive = message.TimeToLive.Value;
 

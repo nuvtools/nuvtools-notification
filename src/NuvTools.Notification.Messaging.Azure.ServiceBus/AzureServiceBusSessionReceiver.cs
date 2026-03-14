@@ -1,4 +1,4 @@
-﻿using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,34 +9,35 @@ using System.Text.Json;
 namespace NuvTools.Notification.Messaging.Azure.ServiceBus;
 
 /// <summary>
-///     Abstract background service for receiving and processing messages from Azure Service Bus.
+///     Abstract background service for receiving and processing messages from session-enabled Azure Service Bus queues.
 ///     <para>
-///         This class sets up a <see cref="ServiceBusProcessor"/> for either a queue or a topic/subscription,
-///         deserializes incoming messages, and dispatches them to a registered <see cref="IMessageConsumer{TBody}"/>.
+///         Messages with the same <c>SessionId</c> are processed sequentially, while different sessions
+///         can be processed in parallel. This is useful for scenarios where order matters per logical group
+///         (e.g., per company) but parallelism across groups is desired.
 ///     </para>
 ///     <typeparam name="TBody">The type of the message body to deserialize and process.</typeparam>
 ///     <typeparam name="TConsumer">
 ///         The consumer type that implements <see cref="IMessageConsumer{TBody}"/> and handles the message.
 ///     </typeparam>
 /// </summary>
-public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundService
+public abstract class AzureServiceBusSessionReceiver<TBody, TConsumer> : BackgroundService
     where TBody : class
     where TConsumer : IMessageConsumer<TBody>
 {
     private readonly ServiceBusClient _client;
-    private readonly ServiceBusProcessor _processor;
+    private readonly ServiceBusSessionProcessor _processor;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger _logger;
 
     private static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="AzureServiceBusReceiver{TBody, TConsumer}"/> class.
+    ///     Initializes a new instance of the <see cref="AzureServiceBusSessionReceiver{TBody, TConsumer}"/> class.
     /// </summary>
     /// <param name="logger">The logger instance.</param>
     /// <param name="serviceProvider">The service provider for dependency injection.</param>
     /// <param name="messagingSection">The messaging configuration section containing Service Bus settings.</param>
-    public AzureServiceBusReceiver(
+    public AzureServiceBusSessionReceiver(
         ILogger logger,
         IServiceProvider serviceProvider,
         MessagingSection messagingSection)
@@ -46,20 +47,21 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
 
         _client = new ServiceBusClient(messagingSection.ConnectionString);
 
-        var options = new ServiceBusProcessorOptions
+        var options = new ServiceBusSessionProcessorOptions
         {
             MaxAutoLockRenewalDuration = messagingSection.MaxAutoLockRenewalDuration,
-            MaxConcurrentCalls = messagingSection.MaxConcurrentCalls,
+            MaxConcurrentSessions = messagingSection.MaxConcurrentCalls,
+            MaxConcurrentCallsPerSession = 1,
             AutoCompleteMessages = messagingSection.AutoCompleteMessages
         };
 
         _processor = string.IsNullOrEmpty(messagingSection.SubscriptionName)
-            ? _client.CreateProcessor(messagingSection.Name, options) // Queue
-            : _client.CreateProcessor(messagingSection.Name, messagingSection.SubscriptionName!, options); // Topic/Subscription
+            ? _client.CreateSessionProcessor(messagingSection.Name, options)
+            : _client.CreateSessionProcessor(messagingSection.Name, messagingSection.SubscriptionName!, options);
     }
 
     /// <summary>
-    ///     Starts the background message processing loop.
+    ///     Starts the background session message processing loop.
     /// </summary>
     /// <param name="stoppingToken">A token to signal cancellation.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -77,15 +79,15 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
     }
 
     /// <summary>
-    ///     Handles incoming messages, deserializes the body, and dispatches to the consumer.
+    ///     Handles incoming session messages, deserializes the body, and dispatches to the consumer.
     /// </summary>
-    /// <param name="args">The message event arguments.</param>
-    private async Task HandleMessage(ProcessMessageEventArgs args)
+    /// <param name="args">The session message event arguments.</param>
+    private async Task HandleMessage(ProcessSessionMessageEventArgs args)
     {
         try
         {
             var body = args.Message.Body.ToString();
-            _logger.LogDebug("Received: {Body}", body);
+            _logger.LogDebug("Received (Session {SessionId}): {Body}", args.SessionId, body);
 
             TBody? deserializedBody = null;
             try
@@ -121,7 +123,7 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             using var scope = _serviceProvider.CreateScope();
             var consumer = scope.ServiceProvider.GetRequiredService<TConsumer>();
 
-            var context = new AzureMessageContext(args);
+            var context = new AzureSessionMessageContext(args);
 
             try
             {
@@ -132,11 +134,11 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             }
             catch (ServiceBusException sbEx) when (sbEx.Reason == ServiceBusFailureReason.MessageLockLost)
             {
-                _logger.LogWarning("Message lock lost for {MessageId}. The message will be retried automatically.", args.Message.MessageId);
+                _logger.LogWarning("Message lock lost for {MessageId} in session {SessionId}. The message will be retried automatically.", args.Message.MessageId, args.SessionId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error consuming message {MessageId}", args.Message.MessageId);
+                _logger.LogError(ex, "Error consuming message {MessageId} in session {SessionId}", args.Message.MessageId, args.SessionId);
 
                 if (!context.IsMessageCompleted)
                 {
@@ -146,14 +148,14 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
                     }
                     catch (ServiceBusException abandonEx) when (abandonEx.Reason == ServiceBusFailureReason.MessageLockLost)
                     {
-                        _logger.LogWarning("Could not abandon message {MessageId} — lock already lost. Message will be retried automatically.", args.Message.MessageId);
+                        _logger.LogWarning("Could not abandon message {MessageId} in session {SessionId} — lock already lost. Message will be retried automatically.", args.Message.MessageId, args.SessionId);
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, "Unexpected fatal error in HandleMessage loop");
+            _logger.LogCritical(ex, "Unexpected fatal error in HandleMessage loop for session {SessionId}", args.SessionId);
 
             try
             {
@@ -161,13 +163,13 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             }
             catch (ServiceBusException abandonEx) when (abandonEx.Reason == ServiceBusFailureReason.MessageLockLost)
             {
-                _logger.LogWarning("Could not abandon message {MessageId} after fatal error — lock already lost.", args.Message.MessageId);
+                _logger.LogWarning("Could not abandon message {MessageId} in session {SessionId} after fatal error — lock already lost.", args.Message.MessageId, args.SessionId);
             }
         }
     }
 
     /// <summary>
-    ///     Handles errors that occur during message processing.
+    ///     Handles errors that occur during session message processing.
     /// </summary>
     /// <param name="args">The error event arguments.</param>
     private async Task HandleError(ProcessErrorEventArgs args)
@@ -182,12 +184,12 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
         {
             try
             {
-                _logger.LogWarning("Processor stopped for {EntityPath}, attempting restart...", args.EntityPath);
+                _logger.LogWarning("Session processor stopped for {EntityPath}, attempting restart...", args.EntityPath);
                 await RestartProcessorWithRetry(args.CancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "Failed to restart processor for {EntityPath}", args.EntityPath);
+                _logger.LogCritical(ex, "Failed to restart session processor for {EntityPath}", args.EntityPath);
             }
         }
     }
@@ -202,23 +204,22 @@ public abstract class AzureServiceBusReceiver<TBody, TConsumer> : BackgroundServ
             {
                 _logger.LogWarning("Restart attempt {Attempt}...", attempt);
                 await _processor.StartProcessingAsync(cancellationToken);
-                _logger.LogInformation("Processor restarted successfully.");
+                _logger.LogInformation("Session processor restarted successfully.");
                 return;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Restart attempt {Attempt} failed", attempt);
                 await Task.Delay(delay, cancellationToken);
-                delay = delay * 2; // exponential backoff
+                delay = delay * 2;
             }
         }
 
-        _logger.LogCritical("Processor could not be restarted after 3 attempts.");
+        _logger.LogCritical("Session processor could not be restarted after 3 attempts.");
     }
 
-
     /// <summary>
-    ///     Stops the message processor and disposes resources.
+    ///     Stops the session message processor and disposes resources.
     /// </summary>
     /// <param name="cancellationToken">A token to signal cancellation.</param>
     public override async Task StopAsync(CancellationToken cancellationToken)

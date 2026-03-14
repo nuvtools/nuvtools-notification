@@ -42,4 +42,11 @@ public class MessagingSection
     /// Default is false.
     /// </summary>
     public bool AutoCompleteMessages { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the queue or subscription requires sessions.
+    /// When enabled, the receiver must use a session-aware processor.
+    /// Default is false.
+    /// </summary>
+    public bool RequiresSession { get; set; }
 }

@@ -55,6 +55,11 @@ public class Message<T>(T body) where T : class
     public TimeSpan? TimeToLive { get; set; }
 
     /// <summary>
+    /// Optional scheduled enqueue time. When set, the message will not be available for delivery until this time.
+    /// </summary>
+    public DateTimeOffset? ScheduledEnqueueTime { get; set; }
+
+    /// <summary>
     /// Free-form dictionary for additional metadata/headers. Keys are strings and values can be any object.
     /// Consumers and transports may interpret these entries as needed.
     /// </summary>

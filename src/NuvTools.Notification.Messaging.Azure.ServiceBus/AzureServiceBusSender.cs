@@ -81,6 +81,9 @@ public abstract class AzureServiceBusSender<TBody> : IMessageSender<TBody> where
         if (message.TimeToLive is not null)
             sbMessage.TimeToLive = message.TimeToLive.Value;
 
+        if (message.ScheduledEnqueueTime is not null)
+            sbMessage.ScheduledEnqueueTime = message.ScheduledEnqueueTime.Value;
+
         foreach (var kvp in message.Properties)
             sbMessage.ApplicationProperties.TryAdd(kvp.Key, kvp.Value);
 

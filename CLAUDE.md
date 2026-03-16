@@ -4,82 +4,78 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a modular .NET library framework for notification and messaging scenarios. It follows an **abstraction-implementation pattern** where each notification domain has an abstraction library and one or more infrastructure/implementation libraries.
+Modular .NET library framework for notification and messaging. Follows an **abstraction-implementation pattern** where each notification domain has an abstraction library defining interfaces and one or more infrastructure-specific implementation libraries.
 
-## Architecture Pattern
+## Build Commands
 
-The codebase follows a consistent pattern across all notification domains:
-
-1. **Abstraction Libraries** (e.g., `NuvTools.Notification.Messaging`, `NuvTools.Notification.Mail`, `NuvTools.Notification.Realtime`)
-   - Define interfaces and base types
-   - Contain no infrastructure dependencies
-   - Provide configuration abstractions
-
-2. **Implementation Libraries** (e.g., `NuvTools.Notification.Messaging.Azure.ServiceBus`, `NuvTools.Notification.Mail.Smtp`)
-   - Implement the abstractions from their corresponding abstraction library
-   - Contain infrastructure-specific dependencies (Azure SDK, SMTP, SignalR)
-   - Inherit from abstract base classes or implement interfaces
-
-### Key Abstraction Interfaces
-
-- **Messaging**: `IMessageSender<TBody>` and `IMessageConsumer<TBody>` - generic message sending and consuming
-- **Mail**: `IMailService` - email sending abstraction
-- **Realtime**: `IMessageSender<T>` - real-time message sending
-
-### Important Implementation Details
-
-- **Azure Service Bus Receiver**: Inherits from `BackgroundService` and uses `ServiceBusProcessor`. It handles deserialization, consumer dispatching, error handling, and automatic processor restart on failure. Message completion is managed through `IMessageContext` to avoid double-completion.
-
-- **Azure Service Bus Sender**: Abstract base class that serializes messages to JSON and sends via `ServiceBusSender`. Supports initialization from `ServiceBusClient`, connection string, or `MessagingSection`.
-
-## Build and Development Commands
-
-### Build
 ```bash
-dotnet build NuvTools.Notification.slnx
+dotnet build NuvTools.Notification.slnx              # Build all projects
+dotnet build src/NuvTools.Notification.Messaging/NuvTools.Notification.Messaging.csproj  # Build one project
+dotnet build -c Release NuvTools.Notification.slnx    # Release build (generates NuGet packages)
 ```
 
-### Build specific project
-```bash
-dotnet build src/NuvTools.Notification.Messaging/NuvTools.Notification.Messaging.csproj
+No test projects exist in this repository.
+
+## Architecture
+
+### Three Notification Domains
+
+| Domain | Abstraction | Implementation(s) |
+|--------|------------|-------------------|
+| **Messaging** | `NuvTools.Notification.Messaging` | `NuvTools.Notification.Messaging.Azure.ServiceBus` |
+| **Mail** | `NuvTools.Notification.Mail` | `NuvTools.Notification.Mail.Smtp` (MailKit) |
+| **Realtime** | `NuvTools.Notification.Realtime` | `NuvTools.Notification.Realtime.Azure.SignalR` (server), `NuvTools.Notification.Realtime.Azure.SignalR.Client` |
+
+### Key Interfaces
+
+- **Messaging sender**: `IMessageSender<TBody>` — `SendAsync(Message<TBody>, CancellationToken)`
+- **Messaging consumer**: `IMessageConsumer<TBody>` — `ConsumeAsync(Message<TBody>, IMessageContext, CancellationToken)`
+- **Message lifecycle**: `IMessageContext` — `CompleteAsync`, `AbandonAsync`, `DeadLetterAsync` (explicit acknowledgment; `AutoCompleteMessages` defaults to `false`)
+- **Mail**: `IMailService` — `SendAsync(MailMessage)`
+- **Realtime sender**: `Realtime.Interfaces.IMessageSender<T>` — `SendAsync(T, CancellationToken)` (separate namespace from messaging sender)
+
+### Message Envelope Pattern
+
+`Message<T>` wraps payloads with metadata: `MessageId` (auto GUID), `CorrelationId`, `Subject`, `SessionId` (for ordered processing), `TimeToLive`, `ScheduledEnqueueTime` (delayed delivery), and `Properties` dictionary for custom headers.
+
+### Azure Service Bus Receiver Hierarchy
+
+```
+BackgroundService
+  └─ AzureServiceBusReceiverBase<TBody, TConsumer>    (shared processing, error handling, retry)
+       ├─ AzureServiceBusReceiver<TBody, TConsumer>    (standard parallel processing)
+       └─ AzureServiceBusSessionReceiver<TBody, TConsumer> (sequential per-SessionId, MaxConcurrentCallsPerSession=1)
 ```
 
-### Restore packages
-```bash
-dotnet restore NuvTools.Notification.slnx
-```
+- **Consumer resolution**: Creates a new DI scope per message (`ServiceProvider.CreateScope()`), resolves `TConsumer` from that scope.
+- **Error handling**: Deserialization failures → dead-letter. Consumer exceptions → abandon for retry. Message lock lost → warning logged, Azure retries. Processor stopped → restart with 3 exponential backoff attempts (5s, 10s, 20s).
+- **Double-completion guard**: Internal `AzureMessageContext` tracks `IsMessageCompleted` flag to prevent calling complete/abandon/dead-letter twice.
 
-### Create NuGet packages (all libraries have `GeneratePackageOnBuild` enabled)
-```bash
-dotnet build -c Release NuvTools.Notification.slnx
-```
+### Azure Service Bus Sender
 
-## Project Structure
+`AzureServiceBusSender<TBody>` is abstract — subclass to specify entity. Supports initialization from `ServiceBusClient`, connection string, or `MessagingSection`.
 
-- **Target Frameworks**: All libraries target `net8`, `net9`, and `net10.0`
-- **Assembly Signing**: All projects use strong name signing (`.snk` files)
-- **Documentation**: All projects generate XML documentation files (`GenerateDocumentationFile`)
-- **Code Analysis**: All projects enforce code style in build (`EnforceCodeStyleInBuild`)
-- **Nullable Reference Types**: Enabled across all projects
-- **Implicit Usings**: Enabled across all projects
+### SignalR Convention
 
-## Library Dependencies
+`AzureSignalRSender<T>` broadcasts via `hubContext.Clients.All` using method name `"Consume_{typeof(T).Name}"`. `AzureSignalRReceiver<T>` registers a handler for the same method name and applies debouncing (default 1000ms) to prevent event flooding.
 
-Each abstraction library is standalone or depends only on Microsoft.Extensions configuration packages. Implementation libraries reference their corresponding abstraction library and infrastructure-specific SDKs:
+### Serialization
 
-- **Azure.ServiceBus**: Used by `NuvTools.Notification.Messaging.Azure.ServiceBus`
-- **Azure.SignalR**: Used by `NuvTools.Notification.Realtime.Azure.SignalR`
-- **Microsoft.AspNetCore.SignalR.Client**: Used by `NuvTools.Notification.Realtime.Azure.SignalR.Client`
+All message serialization uses `System.Text.Json` with `JsonSerializerDefaults.Web` (camelCase property names).
 
 ## Configuration Pattern
 
-All libraries use a consistent configuration pattern with:
-- `MessagingSection` or similar configuration classes
-- `ServiceCollectionExtensions` for dependency injection registration
-- Support for both direct instantiation and DI container registration
+All libraries use `IOptions<TSection>` with typed configuration classes registered via `ServiceCollectionExtensions`:
+- `AddMessagingQueueConfiguration<T>(services, configuration, sectionName)` → `MessagingSection`
+- `AddMailConfiguration<T>(services, configuration, sectionName)` → `MailConfigurationSection`
 
-## Naming Conventions
+Default config section names match the namespace (e.g., `"NuvTools.Notification.Messaging"`).
 
-- Abstraction libraries: `NuvTools.Notification.{Domain}`
-- Implementation libraries: `NuvTools.Notification.{Domain}.{Infrastructure}.{Optional.Subcategory}`
-- Example: `NuvTools.Notification.Realtime.Azure.SignalR.Client`
+## Project Settings
+
+- **Target Frameworks**: `net8;net9;net10.0`
+- **Assembly Signing**: All projects use `.snk` strong name signing
+- **Nullable Reference Types**: Enabled
+- **Implicit Usings**: Enabled
+- **XML Documentation**: Generated for all public APIs
+- **Code Analysis**: `EnforceCodeStyleInBuild` enabled

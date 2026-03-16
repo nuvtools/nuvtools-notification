@@ -7,7 +7,7 @@
 		<Copyright>Copyright © 2026 Nuv Tools</Copyright>
 		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
 		<Description>Azure Service Bus implementation for NuvTools.Notification.Messaging. Includes AzureServiceBusSender for publishing messages and AzureServiceBusReceiver as a background service for consuming messages with automatic deserialization, dead-lettering, retry logic, and concurrent processing support.</Description>
-		<Version>10.0.4</Version>
+		<Version>10.0.5</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -41,8 +41,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
 		<PackageReference Include="Azure.Messaging.ServiceBus" Version="[7.20.1,7.21.0)" />
 	</ItemGroup>
 

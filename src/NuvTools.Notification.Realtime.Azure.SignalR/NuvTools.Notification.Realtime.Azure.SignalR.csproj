@@ -7,7 +7,7 @@
 		<Copyright>Copyright © 2026 Nuv Tools</Copyright>
 		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
 		<Description>Azure SignalR server-side implementation for NuvTools.Notification.Realtime. Provides AzureSignalRSender for broadcasting messages to all connected clients via SignalR hubs. Enables scalable, cloud-based real-time notifications with minimal configuration.</Description>
-		<Version>10.0.3</Version>
+		<Version>10.0.5</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -42,7 +42,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Azure.SignalR" Version="[1.33.0,1.34.0)" />
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>

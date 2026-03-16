@@ -36,7 +36,7 @@ public class SMTPMailService(IOptions<MailConfigurationSection> appMailConfigura
         var bodyBuilder = new BodyBuilder();
 
         message.From.Add(new MailboxAddress(request.From.DisplayName ?? _appMailConfiguration.DisplayName,
-                                            request.From.Address ?? _appMailConfiguration.From));
+                                            request.From.Address ?? _appMailConfiguration.From!));
         message.To.AddRange(request.To.Select(e => new MailboxAddress(e.DisplayName, e.Address)));
 
         message.Subject = request.Subject;

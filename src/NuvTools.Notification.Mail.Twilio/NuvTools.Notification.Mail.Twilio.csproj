@@ -6,7 +6,7 @@
 		<Authors>Nuv Tools</Authors>
 		<Copyright>Copyright © 2026 Nuv Tools</Copyright>
 		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
-		<Description>Abstraction library for email notifications in .NET applications. Defines IMailService interface with MailMessage, MailAddress, and MailPart models supporting HTML content, multiple recipients, and file attachments. Provider-agnostic design enables easy implementation swapping.</Description>
+		<Description>Twilio Email API implementation for NuvTools.Notification.Mail. Provides TwilioMailService, a resilient typed HTTP client for the Twilio Email endpoint (comms.twilio.com/v1/Emails) with support for HTML and plain text content, Base64 attachments, inline images, custom headers, tags, Liquid personalization variables, and scheduled delivery.</Description>
 		<Version>10.1.1</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
@@ -17,7 +17,7 @@
 		<RepositoryType>git</RepositoryType>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>NuvTools;Mail;Email;Abstraction;Notification;HTML;Attachment;MIME;Sender;dotnet</PackageTags>
+		<PackageTags>NuvTools;Mail;Email;Twilio;TwilioEmail;REST;API;HTML;Attachment;Scheduling;Notification;dotnet</PackageTags>
 		<ImplicitUsings>true</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -40,7 +40,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
+	  <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
 	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\NuvTools.Notification.Mail\NuvTools.Notification.Mail.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -98,7 +98,7 @@ public class OrderEventReceiver(
 ```json
 // appsettings.json
 {
-  "NuvTools.Notification.Messaging": {
+  "Messaging": {
     "Name": "orders-queue",
     "ConnectionString": "Endpoint=sb://...",
     "MaxConcurrentCalls": 10,
@@ -117,11 +117,18 @@ services.AddScoped<OrderConsumer>();
 services.AddHostedService<OrderReceiver>();
 ```
 
+The section name carries no dots so every setting can be overridden by an environment variable on Linux and
+Azure App Service, where a dot is not valid in a variable name:
+
+```bash
+Messaging__ConnectionString=...
+```
+
 ### Session-Enabled Queue Setup
 
 ```json
 {
-  "NuvTools.Notification.Messaging": {
+  "Messaging": {
     "Name": "order-events-queue",
     "ConnectionString": "Endpoint=sb://...",
     "MaxConcurrentCalls": 5,
@@ -187,7 +194,7 @@ Properties are mapped to `ApplicationProperties` on Azure Service Bus messages a
 
 ```json
 {
-  "NuvTools.Notification.Messaging": {
+  "Messaging": {
     "Name": "my-queue",
     "SubscriptionName": null,
     "ConnectionString": "Endpoint=sb://namespace.servicebus.windows.net/;SharedAccessKeyName=...",

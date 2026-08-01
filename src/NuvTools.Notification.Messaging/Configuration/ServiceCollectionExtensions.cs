@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
     /// The application <see cref="IConfiguration"/> instance containing the messaging section.
     /// </param>
     /// <param name="sectionName">
-    /// The configuration section name to bind. Defaults to <c>"NuvTools.Notification.Messaging"</c>.
+    /// The configuration section name to bind. Defaults to <c>"Messaging"</c>.
     /// </param>
     /// <returns>
     /// The updated <see cref="IServiceCollection"/> instance, enabling method chaining.
@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
     /// </remarks>
     public static IServiceCollection AddMessagingQueueConfiguration<T>(
                    this IServiceCollection services,
-                   IConfiguration configuration, string sectionName = "NuvTools.Notification.Messaging") where T : MessagingSection
+                   IConfiguration configuration, string sectionName = "Messaging") where T : MessagingSection
     {
         services.Configure<T>(configuration.GetSection(sectionName));
         return services;

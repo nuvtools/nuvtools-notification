@@ -23,7 +23,7 @@ No test projects exist in this repository.
 | Domain | Abstraction | Implementation(s) |
 |--------|------------|-------------------|
 | **Messaging** | `NuvTools.Notification.Messaging` | `NuvTools.Notification.Messaging.Azure.ServiceBus` |
-| **Mail** | `NuvTools.Notification.Mail` | `NuvTools.Notification.Mail.Smtp` (MailKit) |
+| **Mail** | `NuvTools.Notification.Mail` | `NuvTools.Notification.Mail.Smtp` (MailKit), `NuvTools.Notification.Mail.Twilio` (Twilio Email API) |
 | **Realtime** | `NuvTools.Notification.Realtime` | `NuvTools.Notification.Realtime.Azure.SignalR` (server), `NuvTools.Notification.Realtime.Azure.SignalR.Client` |
 
 ### Key Interfaces
@@ -31,7 +31,7 @@ No test projects exist in this repository.
 - **Messaging sender**: `IMessageSender<TBody>` — `SendAsync(Message<TBody>, CancellationToken)`
 - **Messaging consumer**: `IMessageConsumer<TBody>` — `ConsumeAsync(Message<TBody>, IMessageContext, CancellationToken)`
 - **Message lifecycle**: `IMessageContext` — `CompleteAsync`, `AbandonAsync`, `DeadLetterAsync` (explicit acknowledgment; `AutoCompleteMessages` defaults to `false`)
-- **Mail**: `IMailService` — `SendAsync(MailMessage)`
+- **Mail**: `IMailService` — `SendAsync(MailMessage, CancellationToken)` returning `MailSendResult` (`Reference`, `TrackingLocation`)
 - **Realtime sender**: `Realtime.Interfaces.IMessageSender<T>` — `SendAsync(T, CancellationToken)` (separate namespace from messaging sender)
 
 ### Message Envelope Pattern
@@ -59,17 +59,37 @@ BackgroundService
 
 `AzureSignalRSender<T>` broadcasts via `hubContext.Clients.All` using method name `"Consume_{typeof(T).Name}"`. `AzureSignalRReceiver<T>` registers a handler for the same method name and applies debouncing (default 1000ms) to prevent event flooding.
 
+### Mail Layering Rule
+
+The application layer references **only** `NuvTools.Notification.Mail`. Implementation packages must not declare abstractions of their own — no provider-specific interface, message or result type. Every provider-neutral capability (`TextBody`, `Headers`, `Tags`, `ScheduledFor`, `MailAddress.Variables`, `MailPart.ContentId`, `MailSendResult`) lives in the abstraction; implementation packages hold only the service, its configuration section and internal DTOs.
+
+Capabilities a provider cannot honor throw `NotSupportedException` (e.g., SMTP for `ScheduledFor`, `Tags` and `Variables`) — never silently ignored, since sending immediately or with unresolved placeholders is worse than failing.
+
+### Twilio Email Convention
+
+`TwilioMailService` is a typed `HttpClient` posting to `POST {BaseUrl}v1/Emails` (`https://comms.twilio.com/` by default) with Basic authentication built from `AccountSid:AuthToken`. This is the **Twilio Email API**, not the legacy SendGrid v3 API.
+
+- **Registration**: `AddTwilioMail(configuration)` is the only entry point — it binds the section, configures the client, applies `AddStandardResilienceHandler`, and registers the service as `IMailService`.
+- **Async by design**: the API answers `202 Accepted` with `{ operationId, operationLocation }`, mapped to `MailSendResult.Reference`/`TrackingLocation`. Acceptance is not delivery.
+- **Error handling**: non-2xx responses throw `TwilioMailException` carrying the status code and raw body (Twilio returns all validation errors at once). Matches the "exceptions propagate" style of `SMTPMailService`.
+- **Attachments**: streams are Base64-encoded in memory; `contentType` is `"{MediaType}/{MediaExtension}"` and `filename` comes from the required `MailPart.FileName`. Requests over 10 MB are rejected locally.
+- **Twilio-only settings** (e.g., `IpPoolName`) live in `TwilioMailConfigurationSection`, never on the message.
+
 ### Serialization
 
-All message serialization uses `System.Text.Json` with `JsonSerializerDefaults.Web` (camelCase property names).
+All message serialization uses `System.Text.Json` with `JsonSerializerDefaults.Web` (camelCase property names). The Twilio DTOs additionally pin every property with explicit `[JsonPropertyName]` because the API mixes casings (`filename` vs `contentType`).
 
 ## Configuration Pattern
 
 All libraries use `IOptions<TSection>` with typed configuration classes registered via `ServiceCollectionExtensions`:
 - `AddMessagingQueueConfiguration<T>(services, configuration, sectionName)` → `MessagingSection`
-- `AddMailConfiguration<T>(services, configuration, sectionName)` → `MailConfigurationSection`
+- `AddMailConfiguration<T>(services, configuration, sectionName)` → `MailConfigurationSection` or a derived provider section
+- `AddSmtpMail(services, configuration, sectionName)` → `SmtpMailConfigurationSection` + `IMailService`
+- `AddTwilioMail(services, configuration, sectionName, configureResilience)` → `TwilioMailConfigurationSection` + typed `HttpClient` as `IMailService`
 
-Default config section names match the namespace (e.g., `"NuvTools.Notification.Messaging"`).
+Mail configuration classes form a hierarchy: `MailConfigurationSection` (abstraction) holds only what every provider shares (`From`, `DisplayName`); `SmtpMailConfigurationSection` and `TwilioMailConfigurationSection` live in their own packages and add the infrastructure settings.
+
+Default config section names must contain **no dots** and no `NuvTools` prefix — a dotted key cannot be overridden by an environment variable on Linux/Azure App Service (`MailTwilio__AuthToken` works, `NuvTools.Notification.Mail.Twilio__AuthToken` does not). Current names: `"Mail"`, `"MailSmtp"`, `"MailTwilio"`, `"Messaging"`. Realtime has no configuration section.
 
 ## Project Settings
 

@@ -7,11 +7,10 @@
 		<Copyright>Copyright © 2026 Nuv Tools</Copyright>
 		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
 		<Description>SMTP implementation for NuvTools.Notification.Mail using MailKit and MimeKit. Provides SMTPMailService for sending emails with full support for HTML content, file attachments, SSL/TLS encryption, and authentication. Configurable via dependency injection.</Description>
-		<Version>10.0.9</Version>
+		<Version>10.1.1</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
-		<DelaySign>False</DelaySign>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/nuvtools/nuvtools-notification</RepositoryUrl>
@@ -42,7 +41,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="MailKit" Version="4.17.0" />
-	  <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.9" />
+	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />
 	</ItemGroup>
 
 	<ItemGroup>

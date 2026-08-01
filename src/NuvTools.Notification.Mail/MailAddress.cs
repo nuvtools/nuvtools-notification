@@ -18,4 +18,14 @@ public class MailAddress
     /// Gets or sets the optional display name for the email address (e.g., "John Doe").
     /// </summary>
     public string? DisplayName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the optional template variables used to personalize the message for this recipient.
+    /// </summary>
+    /// <remarks>
+    /// Each provider defines its own template syntax for the placeholders in the subject and body.
+    /// Providers with no personalization support throw <see cref="NotSupportedException"/> instead of
+    /// delivering the message with the placeholders unresolved.
+    /// </remarks>
+    public IDictionary<string, object?>? Variables { get; set; }
 }

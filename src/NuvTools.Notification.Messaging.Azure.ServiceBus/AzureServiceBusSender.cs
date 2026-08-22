@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using NuvTools.Notification.Messaging.Configuration;
 using NuvTools.Notification.Messaging.Interfaces;
@@ -13,7 +14,8 @@ namespace NuvTools.Notification.Messaging.Azure.ServiceBus;
 /// </typeparam>
 /// <remarks>
 /// This abstract class encapsulates the logic for serializing messages and sending them to Azure Service Bus.
-/// It supports initialization using a <see cref="ServiceBusClient"/>, a connection string, or a <see cref="MessagingSection"/> configuration.
+/// It supports initialization using a <see cref="ServiceBusClient"/>, a connection string, or a <see cref="MessagingSection"/> configuration
+/// (which may authenticate by connection string or by Entra ID credential).
 /// </remarks>
 public abstract class AzureServiceBusSender<TBody> : IMessageSender<TBody> where TBody : class
 {
@@ -50,8 +52,12 @@ public abstract class AzureServiceBusSender<TBody> : IMessageSender<TBody> where
     /// Initializes a new instance of the <see cref="AzureServiceBusSender{TBody}"/> class using a <see cref="MessagingSection"/> configuration.
     /// </summary>
     /// <param name="messagingSection">The messaging configuration section containing connection details.</param>
-    protected AzureServiceBusSender(MessagingSection messagingSection)
-        : this(messagingSection.ConnectionString, messagingSection.Name)
+    /// <param name="credential">
+    /// Credential used when the section authenticates by fully qualified namespace. When null, one is derived
+    /// from <see cref="MessagingSection.ManagedIdentityClientId"/>.
+    /// </param>
+    protected AzureServiceBusSender(MessagingSection messagingSection, TokenCredential? credential = null)
+        : this(ServiceBusClientFactory.Create(messagingSection, credential), messagingSection.Name)
     {
     }
 

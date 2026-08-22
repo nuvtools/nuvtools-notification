@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,11 +29,12 @@ public abstract class AzureServiceBusReceiverBase<TBody, TConsumer> : Background
     protected AzureServiceBusReceiverBase(
         ILogger logger,
         IServiceProvider serviceProvider,
-        MessagingSection messagingSection)
+        MessagingSection messagingSection,
+        TokenCredential? credential = null)
     {
         Logger = logger;
         ServiceProvider = serviceProvider;
-        Client = new ServiceBusClient(messagingSection.ConnectionString);
+        Client = ServiceBusClientFactory.Create(messagingSection, credential);
     }
 
     protected abstract bool IsProcessing { get; }

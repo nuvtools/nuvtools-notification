@@ -124,6 +124,37 @@ Azure App Service, where a dot is not valid in a variable name:
 Messaging__ConnectionString=...
 ```
 
+### Passwordless Setup (Entra ID)
+
+Drop `ConnectionString` and name the namespace instead. No key is stored, so nothing expires:
+
+```json
+{
+  "Messaging": {
+    "Name": "orders-queue",
+    "FullyQualifiedNamespace": "contoso.servicebus.windows.net",
+    "ManagedIdentityClientId": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+The identity needs the *Azure Service Bus Data Sender* role to publish and *Azure Service Bus Data Receiver*
+to consume, granted on the namespace or the individual entity. Omit `ManagedIdentityClientId` to use the
+system-assigned identity; locally the same configuration falls back to the developer credential (`az login`),
+so no separate development branch is needed.
+
+When both `ConnectionString` and `FullyQualifiedNamespace` are present the connection string wins, which makes
+the migration reversible one entity at a time.
+
+Senders and receivers also accept an explicit `TokenCredential` as a final constructor argument when the
+default chain is not what you want:
+
+```csharp
+public class OrderReceiver(ILogger<OrderReceiver> logger, IServiceProvider provider, IOptions<MessagingSection> options)
+    : AzureServiceBusReceiver<Order, OrderConsumer>(
+        logger, provider, options.Value, new WorkloadIdentityCredential());
+```
+
 ### Session-Enabled Queue Setup
 
 ```json
@@ -212,7 +243,9 @@ Properties are mapped to `ApplicationProperties` on Azure Service Bus messages a
 |----------|---------|-------------|
 | `Name` | *(required)* | Queue or topic name |
 | `SubscriptionName` | `null` | Subscription name (for topic/subscription scenarios) |
-| `ConnectionString` | *(required)* | Azure Service Bus connection string |
+| `ConnectionString` | `null` | Azure Service Bus connection string (shared access key). Required unless `FullyQualifiedNamespace` is set |
+| `FullyQualifiedNamespace` | `null` | Namespace host such as `contoso.servicebus.windows.net`, used to authenticate with Entra ID instead of a key |
+| `ManagedIdentityClientId` | `null` | Client ID of the user-assigned managed identity to authenticate as when `FullyQualifiedNamespace` is used |
 | `MaxAutoLockRenewalDuration` | `00:30:00` | How long to automatically renew the message lock |
 | `MaxConcurrentCalls` | `10` | Max parallel message handlers (or max concurrent sessions) |
 | `AutoCompleteMessages` | `false` | Auto-complete messages after handler returns |

@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using NuvTools.Notification.Messaging.Configuration;
@@ -16,19 +17,32 @@ namespace NuvTools.Notification.Messaging.Azure.ServiceBus;
 ///         The consumer type that implements <see cref="IMessageConsumer{TBody}"/> and handles the message.
 ///     </typeparam>
 /// </summary>
-public abstract class AzureServiceBusSessionReceiver<TBody, TConsumer>(
-    ILogger logger,
-    IServiceProvider serviceProvider,
-    MessagingSection messagingSection)
-    : AzureServiceBusReceiverBase<TBody, TConsumer>(logger, serviceProvider, messagingSection)
+public abstract class AzureServiceBusSessionReceiver<TBody, TConsumer>
+    : AzureServiceBusReceiverBase<TBody, TConsumer>
     where TBody : class
     where TConsumer : IMessageConsumer<TBody>
 {
-    private readonly ServiceBusSessionProcessor _processor = CreateProcessor(messagingSection);
+    private readonly ServiceBusSessionProcessor _processor;
 
-    private static ServiceBusSessionProcessor CreateProcessor(MessagingSection section)
+    /// <param name="logger">Logger used for processing diagnostics.</param>
+    /// <param name="serviceProvider">Provider used to resolve <typeparamref name="TConsumer"/> per message.</param>
+    /// <param name="messagingSection">The messaging configuration section containing connection details.</param>
+    /// <param name="credential">
+    /// Credential used when the section authenticates by fully qualified namespace. When null, one is derived
+    /// from <see cref="MessagingSection.ManagedIdentityClientId"/>.
+    /// </param>
+    protected AzureServiceBusSessionReceiver(
+        ILogger logger,
+        IServiceProvider serviceProvider,
+        MessagingSection messagingSection,
+        TokenCredential? credential = null)
+        : base(logger, serviceProvider, messagingSection, credential)
     {
-        var client = new ServiceBusClient(section.ConnectionString);
+        _processor = CreateProcessor(Client, messagingSection);
+    }
+
+    private static ServiceBusSessionProcessor CreateProcessor(ServiceBusClient client, MessagingSection section)
+    {
         var options = new ServiceBusSessionProcessorOptions
         {
             MaxAutoLockRenewalDuration = section.MaxAutoLockRenewalDuration,

@@ -7,7 +7,7 @@
 		<Copyright>Copyright © 2026 Nuv Tools</Copyright>
 		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
 		<Description>Twilio Email API implementation for NuvTools.Notification.Mail. Provides TwilioMailService, a resilient typed HTTP client for the Twilio Email endpoint (comms.twilio.com/v1/Emails) with support for HTML and plain text content, Base64 attachments, inline images, custom headers, tags, Liquid personalization variables, and scheduled delivery.</Description>
-		<Version>10.1.1</Version>
+		<Version>10.1.2</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -40,9 +40,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
-	  <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
-	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.10" />
+	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.11" />
+	  <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
+	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.11" />
 	</ItemGroup>
 
 	<ItemGroup>

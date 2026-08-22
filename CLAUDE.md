@@ -55,6 +55,14 @@ BackgroundService
 
 `AzureServiceBusSender<TBody>` is abstract — subclass to specify entity. Supports initialization from `ServiceBusClient`, connection string, or `MessagingSection`.
 
+### Service Bus Authentication
+
+`ServiceBusClientFactory.Create(MessagingSection, TokenCredential?)` is the single place a `ServiceBusClient` is built. `ConnectionString` (shared access key) takes precedence; otherwise `FullyQualifiedNamespace` is used with the supplied credential, or a `DefaultAzureCredential` derived from `ManagedIdentityClientId`. Senders and both receivers take an optional trailing `TokenCredential`.
+
+`DefaultAzureCredential` comes from **Azure.Core 1.60+**, which absorbed the Azure.Identity types — referencing `Azure.Identity` as well makes them ambiguous (CS0433), so this package references `Azure.Core` directly instead.
+
+Receivers build their processor from the base class's `Client` rather than opening a second connection, which is why they use explicit constructors instead of primary constructors (derived field initializers run before the base constructor).
+
 ### SignalR Convention
 
 `AzureSignalRSender<T>` broadcasts via `hubContext.Clients.All` using method name `"Consume_{typeof(T).Name}"`. `AzureSignalRReceiver<T>` registers a handler for the same method name and applies debouncing (default 1000ms) to prevent event flooding.

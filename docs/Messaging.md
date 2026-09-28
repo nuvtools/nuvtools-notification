@@ -140,7 +140,8 @@ Drop `ConnectionString` and name the namespace instead. No key is stored, so not
 
 The identity needs the *Azure Service Bus Data Sender* role to publish and *Azure Service Bus Data Receiver*
 to consume, granted on the namespace or the individual entity. Omit `ManagedIdentityClientId` to use the
-system-assigned identity; locally the same configuration falls back to the developer credential (`az login`),
+identity named by the `AZURE_CLIENT_ID` environment variable, or the system-assigned identity when that is
+unset; locally the same configuration falls back to the developer credential (`az login`),
 so no separate development branch is needed.
 
 When both `ConnectionString` and `FullyQualifiedNamespace` are present the connection string wins, which makes

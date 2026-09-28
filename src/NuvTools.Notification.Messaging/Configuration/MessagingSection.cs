@@ -40,7 +40,8 @@ public class MessagingSection
     /// <summary>
     /// Gets or sets the client ID of the user-assigned managed identity to authenticate with when
     /// <see cref="FullyQualifiedNamespace"/> is used and no explicit credential is supplied.
-    /// Leave empty to use the system-assigned identity or the ambient developer credential.
+    /// Leave empty to use the identity named by the <c>AZURE_CLIENT_ID</c> environment variable, then the
+    /// system-assigned identity or the ambient developer credential.
     /// </summary>
     public string? ManagedIdentityClientId { get; set; }
 

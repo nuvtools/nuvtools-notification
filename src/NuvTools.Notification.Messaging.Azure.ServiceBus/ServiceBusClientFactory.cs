@@ -40,8 +40,14 @@ public static class ServiceBusClientFactory
     }
 
     private static TokenCredential CreateCredential(MessagingSection section)
-        => new DefaultAzureCredential(new DefaultAzureCredentialOptions
-        {
-            ManagedIdentityClientId = section.ManagedIdentityClientId
-        });
+    {
+        // The options default ManagedIdentityClientId to AZURE_CLIENT_ID; assigning null would discard it
+        // and fall back to a system-assigned identity.
+        var options = new DefaultAzureCredentialOptions();
+
+        if (!string.IsNullOrEmpty(section.ManagedIdentityClientId))
+            options.ManagedIdentityClientId = section.ManagedIdentityClientId;
+
+        return new DefaultAzureCredential(options);
+    }
 }

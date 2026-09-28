@@ -42,10 +42,10 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.12" />
-		<PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.2" />
+		<PackageReference Include="Azure.Messaging.ServiceBus" Version="7.21.0" />
 		<!-- Azure.Core 1.60+ carries the Azure.Identity credential types (DefaultAzureCredential);
 		     referencing Azure.Identity as well makes those types ambiguous. -->
-		<PackageReference Include="Azure.Core" Version="1.62.0" />
+		<PackageReference Include="Azure.Core" Version="1.63.0" />
 	</ItemGroup>
 
 	<ItemGroup>

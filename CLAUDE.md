@@ -107,3 +107,13 @@ Default config section names must contain **no dots** and no `NuvTools` prefix â
 - **Implicit Usings**: Enabled
 - **XML Documentation**: Generated for all public APIs
 - **Code Analysis**: `EnforceCodeStyleInBuild` enabled
+
+## CI and Releasing
+
+`.github/workflows/ci.yml` builds the solution in Release with `-warnaserror` and runs the tests on every push and pull request to `main`.
+
+Each package has its own manually-run publish workflow (`mail-publish.yml`, `smtp-publish.yml`, `twilio-publish.yml`, `messaging-publish.yml`, `servicebus-publish.yml`, `realtime-publish.yml`, `signalr-publish.yml` and `signalr-client-publish.yml`), calling the reusable `package-publish.yml`. It reads `<Version>` from the `.csproj` (never computes it), verifies the package, pushes through nuget.org trusted publishing behind the `nuget` environment, and then writes the release tag (`mail-vX.Y.Z`, `smtp-vX.Y.Z`, `twilio-vX.Y.Z`, `messaging-vX.Y.Z`, `servicebus-vX.Y.Z`, `realtime-vX.Y.Z`, `signalr-vX.Y.Z` and `signalr-client-vX.Y.Z`). See *Releasing* in the README.
+
+- A new package needs its own small workflow file and a row in the README table.
+- The SourceLink and symbol settings (`PublishRepositoryUrl`, `EmbedUntrackedSources`, `IncludeSymbols`, `snupkg`) must be in every packable project: the workflow fails a package without its `.snupkg`.
+- A package referenced as a project by another of this repository is published first; see *Releasing* in the README for the order.

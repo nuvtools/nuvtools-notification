@@ -57,6 +57,63 @@ Contributions are welcome! Please ensure:
 2. XML documentation is provided for all public APIs
 3. Code builds without warnings
 
+## Releasing
+
+Publishing to nuget.org is irreversible per version, so the workflow makes it the last and smallest
+step.
+
+**One workflow per library.** Each package has its own, so a run and an approval each concern
+exactly one package. The steps themselves are shared, in the reusable `package-publish.yml`.
+
+| Package | Workflow | Release tag |
+|---|---|---|
+| `NuvTools.Notification.Mail` | `mail-publish.yml` | `mail-vX.Y.Z` |
+| `NuvTools.Notification.Mail.Smtp` | `smtp-publish.yml` | `smtp-vX.Y.Z` |
+| `NuvTools.Notification.Mail.Twilio` | `twilio-publish.yml` | `twilio-vX.Y.Z` |
+| `NuvTools.Notification.Messaging` | `messaging-publish.yml` | `messaging-vX.Y.Z` |
+| `NuvTools.Notification.Messaging.Azure.ServiceBus` | `servicebus-publish.yml` | `servicebus-vX.Y.Z` |
+| `NuvTools.Notification.Realtime` | `realtime-publish.yml` | `realtime-vX.Y.Z` |
+| `NuvTools.Notification.Realtime.Azure.SignalR` | `signalr-publish.yml` | `signalr-vX.Y.Z` |
+| `NuvTools.Notification.Realtime.Azure.SignalR.Client` | `signalr-client-publish.yml` | `signalr-client-vX.Y.Z` |
+
+1. Set the package's `<Version>` in its `.csproj` and merge it. That is the version that gets
+   published; the workflow reads it and never computes one.
+2. Run the library's workflow by hand (*Actions → Mail Publish → Run workflow*) with *push*
+   checked.
+3. The workflow builds the solution with `-warnaserror`, runs the tests, takes **that package only**
+   from the build output, verifies it carries its README, licence, icon, symbols and every target
+   framework, and then waits for approval on the `nuget` GitHub Environment before pushing.
+4. **After the push succeeds, the workflow tags the commit** with the tag in the table above. The tag is a
+   record of what is on nuget.org, never what starts a release, so it cannot exist for a version
+   that did not get there. A run whose tag already exists stops before building: the version has
+   been released and `<Version>` needs a bump.
+
+**A referenced package goes first.** A package that references another of this repository as a
+project depends on whatever `<Version>` that one has in the commit. The workflow checks that
+version is on nuget.org and refuses to push a package whose dependency is not there yet. So:
+
+- `NuvTools.Notification.Mail` before `NuvTools.Notification.Mail.Smtp` and `NuvTools.Notification.Mail.Twilio`.
+- `NuvTools.Notification.Messaging` before `NuvTools.Notification.Messaging.Azure.ServiceBus`.
+- `NuvTools.Notification.Realtime` before `NuvTools.Notification.Realtime.Azure.SignalR`.
+
+That check knows a version exists, not what is in it: when a referenced package changes its public
+API, bump and publish it first, then bump and publish the packages built on it.
+
+**Versions published by hand are refused.** Releases made before these workflows exist on nuget.org
+with no tag. Pushing one again would skip the duplicate and then tag the current commit as a
+release it is not, so a version that is already on nuget.org stops the run. The exception is a
+re-run of the same run, which is how a push that succeeded and a tag that failed gets finished.
+
+**No API key is stored.** The push uses nuget.org's trusted publishing: the job presents a GitHub
+OIDC token, nuget.org checks it against the policy registered for this repository and answers with a
+key that lives for one hour. The repository needs one secret, `NUGET_USER` — the nuget.org profile
+name the policy belongs to — and the policy itself, registered under *Trusted Publishing* on
+nuget.org with the owner `nuvtools`, the repository `nuvtools-notification`, the workflow file and the
+environment `nuget`.
+
+Run a library's workflow by hand with *push* unchecked for a dry run that stops after the
+verification.
+
 ## License
 
 Copyright © 2026 Nuv Tools. All rights reserved.

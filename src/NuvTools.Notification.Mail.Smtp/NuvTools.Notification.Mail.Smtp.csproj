@@ -7,7 +7,7 @@
 		<Copyright>Copyright © 2026 Nuv Tools</Copyright>
 		<PackageProjectUrl>https://nuvtools.com</PackageProjectUrl>
 		<Description>SMTP implementation for NuvTools.Notification.Mail using MailKit and MimeKit. Provides SMTPMailService for sending emails with full support for HTML content, file attachments, SSL/TLS encryption, and authentication. Configurable via dependency injection.</Description>
-		<Version>10.1.13</Version>
+		<Version>10.1.14</Version>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<PackageIcon>icon.png</PackageIcon>
@@ -20,6 +20,21 @@
 		<PackageTags>NuvTools;Mail;Email;SMTP;MailKit;MimeKit;HTML;Attachment;SSL;TLS;Notification;dotnet</PackageTags>
 		<ImplicitUsings>true</ImplicitUsings>
 		<Nullable>enable</Nullable>
+
+		<!-- SourceLink: a stack trace from a consumer's process steps into the exact commit this
+		     package was built from. EmbedUntrackedSources covers the generated files, which are the
+		     ones a debugger otherwise cannot find. The .NET 8+ SDK has SourceLink built in, so no
+		     package reference is needed. -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<!-- Set by the publish workflow. Makes the build deterministic and marks the package as built by
+	     CI rather than on somebody's machine. -->
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -41,7 +56,10 @@
 
 	<ItemGroup>
 	  <PackageReference Include="MailKit" Version="4.18.1" />
-	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.12" />
+	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.13" />
+	  <!-- MimeKit only asks for 10.0.0, which has known vulnerabilities; this lifts it to the
+	       patched release. -->
+	  <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
 	</ItemGroup>
 
 	<ItemGroup>
